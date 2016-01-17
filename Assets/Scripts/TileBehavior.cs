@@ -31,6 +31,7 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
             }
         }
         allNeighbours_ = neighbours;
+        tile.AllNeighbours = neighbours.Select(tb => tb.tile).ToList();
     }
 
     public IEnumerable<TileBehavior> Neighbours() {
@@ -60,7 +61,6 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         
         if (isMouseOver && Input.GetMouseButtonDown(1)) {
             tile.Passable = !tile.Passable;
-            GridManager.Instance.ResetPath();
             UpdateColor();
         }
 

@@ -7,6 +7,7 @@ public class ConstrainedTileGenerator : MonoBehaviour {
     public GameObject hexSample;
     public Transform hexGrid;
     public GameObject constraint;
+    public GameObject character;
 
     private Vector2 hexSize;
     private Vector2 constraintSize;
@@ -53,6 +54,11 @@ public class ConstrainedTileGenerator : MonoBehaviour {
         }
 
         gridManager.Board = board;
+        var chr = Instantiate(character);
+        var charMovement = chr.GetComponent<CharacterMovement>();
+        charMovement.TilePosFunc = (tile) => board[tile.Location].transform.position;
+        charMovement.TeleportTo(board[new Point(0, 0)].tile);
+        gridManager.Character = charMovement;
     }
 
     private TileBehavior CreateHex(Vector3 actualPoint, Point location) {

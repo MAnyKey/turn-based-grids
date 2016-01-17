@@ -41,7 +41,7 @@ public class PathFinding {
 
     public class FindPathQueue<P, V> {
         private SortedDictionary<P, Queue<V>> data = new SortedDictionary<P, Queue<V>>();
-        private Dictionary<V, P> minPath = new Dictionary<V, P>();
+        //private Dictionary<V, P> minPath = new Dictionary<V, P>();
 
         public FindPathQueue() {
         }
@@ -81,7 +81,7 @@ public class PathFinding {
         Func<Node, Node, double> distance, 
         Func<Node, Node, double> estimate) where Node : class, IHasNeighbours<Node> {
         var visited = new HashSet<Node>();
-        var minPaths = new Dictionary<Node, Path<Node>>();
+        //var minPaths = new Dictionary<Node, Path<Node>>();
         var queue = new FindPathQueue<double, Path<Node>>();
         queue.Add(0, new Path<Node>(start));
         while (!queue.IsEmpty()) {
@@ -90,13 +90,17 @@ public class PathFinding {
             if (lastStep == end) {
                 return path;
             }
+            if (visited.Contains(lastStep)) {
+                continue;
+            }
             visited.Add(lastStep);
             foreach (var neighbour in lastStep.Neighbours()) {
                 if (visited.Contains(neighbour)) {
                     continue;
                 }
                 double d = distance(lastStep, neighbour);
-                queue.Add(estimate(neighbour, end), path.AddStep(neighbour, d));
+                var newPath = path.AddStep(neighbour, d);
+                queue.Add(newPath.TotalCost + estimate(neighbour, end), newPath);
             }
         }
         return null;
