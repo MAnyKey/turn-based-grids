@@ -60,8 +60,7 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         bool isMouseOver = IsMouseOver();
         
         if (isMouseOver && Input.GetMouseButtonDown(1)) {
-            tile.Passable = !tile.Passable;
-            UpdateColor();
+            GridManager.Instance.TileClicked(this, 1);
         }
 
         if (!tile.Passable) {
@@ -69,8 +68,13 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         }
 
         if (isMouseOver && Input.GetMouseButtonDown(0)) {
-            GridManager.Instance.TileClicked(this);
+            GridManager.Instance.TileClicked(this, 0);
         }
+    }
+
+    public void TogglePassable() {
+        tile.Passable = !tile.Passable;
+        UpdateColor();
     }
 
     private void UpdateColor() {

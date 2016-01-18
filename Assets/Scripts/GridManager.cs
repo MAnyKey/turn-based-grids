@@ -8,26 +8,10 @@ public class GridManager : MonoBehaviour {
 
     public static GridManager Instance { get; private set; }
 
-    //public GameObject Character { get; set; }
-
-    //private void PlaceCharacter(GameObject characterSample, Point gridPoint) {
-    //    var character = Instantiate(characterSample);
-    //    controller_ = character.GetComponent<CharacterControllerAI>();
-    //    var tb = Board[gridPoint];
-    //    controller_.SetTile(tb);
-    //}
-
     public Dictionary<Point, TileBehavior> Board { get; set; }
     public CharacterMovement Character { get; set; }
 
-    //private struct CharacterDescription {
-    //    public Tile tile;
-    //    public CharacterMovement characterMovement;
-    //}
-
-    //private List<CharacterDescription> characters_;
-
-    //public bool SelectingPath { get; private set; }
+    private bool disableUi_;
 
 	// Use this for initialization
 	void Start () {
@@ -37,31 +21,17 @@ public class GridManager : MonoBehaviour {
         Instance = this;
 	}
 
-    void Update() {
-        //if (Input.GetMouseButtonDown(0)) {
-        //    ResetPath();
-        //}
-    }
 
-    List<TileBehavior> endPointTiles = new List<TileBehavior>();
-    TileBehavior[] pathTiles;
-
-
-    public void TileClicked(TileBehavior tile) {
-        if (Character.IsMoving) {
+    public void TileClicked(TileBehavior tile, int button) {
+        if (disableUi_) {
             // ignore click while moving
-            // TODO: we should call this function from TileBehavior in order to ignore all clicks, not just this type
-            Debug.Log("Is moving");
             return;
         }
-        Debug.Log("Move to " + tile.tile.Location);
-        MoveCharacterTo(tile);
-        //ResetPath();
-        //endPointTiles.Add(tile);
-        //if (endPointTiles.Count == 2) {
-        //    FindAndShowPath();
-        //    endPointTiles = new List<TileBehavior>();
-        //}
+        if (button == 0) {
+            MoveCharacterTo(tile);
+        } else if (button == 1) {
+            tile.TogglePassable();
+        }
     }
 
     private void MoveCharacterTo(TileBehavior tile) {
@@ -75,8 +45,10 @@ public class GridManager : MonoBehaviour {
             return;
         }
         
-        Action<CharacterMovement> action = (x) => { }; // TODO: do something
+        
         var pathTiles = path.Reverse().Skip(1).ToList();
+        disableUi_ = true;
+        Action<CharacterMovement> action = (x) => { disableUi_ = false; };
         Character.MoveTo(pathTiles, action);
     }
 

@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System;
 
 [RequireComponent(typeof(Animation))]
-[RequireComponent(typeof(CharacterController))]
+//[RequireComponent(typeof(CharacterController))]
 public class CharacterMovement : MonoBehaviour {
 
-    public float speed = 0.0025f;
-    public float rotationSpeed = 0.004f;
+    public float speed = 2.5f;
+    public float rotationSpeed = 0.04f;
 
     public float minNextTileDest = 0.07f;
 
     public Func<Tile, Vector3> TilePosFunc { get; set; }
 
     private Animation animation_;
-    private CharacterController controller_;
+    //private CharacterController controller_;
     private bool isMoving_;
     private Transform transform_;
 
@@ -70,7 +70,7 @@ public class CharacterMovement : MonoBehaviour {
 
     void Awake() {
         isMoving_ = false;
-        controller_ = GetComponent<CharacterController>();
+        //controller_ = GetComponent<CharacterController>();
         animation_ = GetComponent<Animation>();
         animation_.wrapMode = WrapMode.Loop;
         transform_ = transform;
@@ -96,7 +96,7 @@ public class CharacterMovement : MonoBehaviour {
                 return;
             }
         }
-        Debug.Log("Move");
+        Debug.Log("Moving, pos: " + transform.position);
         MoveTowards(move_.curTilePos);
 	}
 
@@ -110,20 +110,22 @@ public class CharacterMovement : MonoBehaviour {
         forward *= speed;
 
         // just cosine of angle between |direction| and current object forward direction
-        float speedModifier = Vector3.Dot(direction.normalized, transform.forward);
-        const float speedModifierThreshold = 0.95f;
-        if (speedModifier > speedModifierThreshold) {
-            // walk
-            controller_.SimpleMove(forward * speedModifier);
-            //if (!animation_["walk"].enabled) {
-            //    animation_.CrossFade("walk");
-            //}
-        } else {
-            // idle, just rotating
-            //if (!animation_["idle"].enabled) {
-            //    animation_.CrossFade("idle");
-            //}
-        }
+        //float speedModifier = Vector3.Dot(direction.normalized, transform.forward);
+        //const float speedModifierThreshold = 0.95f;
+        //if (speedModifier > speedModifierThreshold) {
+        //    // walk
+        //    controller_.SimpleMove(forward * speedModifier);
+        //    //if (!animation_["walk"].enabled) {
+        //    //    animation_.CrossFade("walk");
+        //    //}
+        //} else {
+        //    // idle, just rotating
+        //    //if (!animation_["idle"].enabled) {
+        //    //    animation_.CrossFade("idle");
+        //    //}
+        //}
+        //controller_.SimpleMove(forward);
+        transform.position += forward;
     }
 
     // returns true if we reached the last tile of the path
