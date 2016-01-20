@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System;
 
-[RequireComponent(typeof(Animation))]
-//[RequireComponent(typeof(CharacterController))]
+// [RequireComponent(typeof(Animation))]
 public class CharacterMovement : MonoBehaviour {
 
     public float speed = 2.5f;
@@ -14,7 +13,6 @@ public class CharacterMovement : MonoBehaviour {
     public Func<Tile, Vector3> TilePosFunc { get; set; }
 
     private Animation animation_;
-    //private CharacterController controller_;
     private bool isMoving_;
     private Transform transform_;
 
@@ -70,9 +68,10 @@ public class CharacterMovement : MonoBehaviour {
 
     void Awake() {
         isMoving_ = false;
-        //controller_ = GetComponent<CharacterController>();
         animation_ = GetComponent<Animation>();
-        animation_.wrapMode = WrapMode.Loop;
+        if (animation_) {
+            animation_.wrapMode = WrapMode.Loop;    
+        }
         transform_ = transform;
     }
 	
@@ -92,6 +91,7 @@ public class CharacterMovement : MonoBehaviour {
                 isMoving_ = false;
 
                 //animation_.CrossFade("idle");
+                GoToAnimation("idle");
                 endMove(this);
                 return;
             }
@@ -125,6 +125,7 @@ public class CharacterMovement : MonoBehaviour {
         //    //}
         //}
         //controller_.SimpleMove(forward);
+        GoToAnimation("run");
         transform.position += forward;
     }
 
@@ -142,5 +143,15 @@ public class CharacterMovement : MonoBehaviour {
     private bool CloseEnoughToCurrentTile() {
         var distanceVector = transform_.position - move_.curTilePos;
         return distanceVector.sqrMagnitude < minNextTileDest * minNextTileDest;
+    }
+
+    private void GoToAnimation(string animation) {
+        if (!animation_) {
+            return;
+        }
+
+        if (!animation_[animation].enabled) {
+            animation_.CrossFade(animation);
+        }
     }
 }

@@ -35,6 +35,9 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         }
         allNeighbours_ = neighbours;
         tile.AllNeighbours = neighbours.Select(tb => tb.tile).ToList();
+        foreach (var t in tile.AllNeighbours) {
+            Debug.Log(String.Format("Neighbour of {0} is {1}", tile.Location, t.Location));
+        }
     }
 
     public IEnumerable<TileBehavior> Neighbours() {

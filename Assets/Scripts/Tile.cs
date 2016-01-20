@@ -50,7 +50,7 @@ public class Tile : PathFinding.IHasNeighbours<Tile> {
     public List<Tile> AllNeighbours { get; set; }
 
     public IEnumerable<Tile> Neighbours() {
-        return AllNeighbours.Where(n => n.Passable && n.Occupied);
+        return AllNeighbours.Where(n => n.Passable && !n.Occupied);
     }
 
     public static double Distance(Tile start, Tile end) {

@@ -60,6 +60,8 @@ public class GridManager : MonoBehaviour {
     private void MoveCharacterTo(TileBehavior tile) {
         var startTile = character_.tile;
         var endTile = tile.tile;
+        Debug.Log(String.Format("Path from {0} to {1}", startTile.Location, endTile.Location));
+
         Func<Tile, Tile, double> distance = (x, y) => 1; // we expect it to be called only for adjacent tiles
 
         var path = PathFinding.FindPath(startTile, endTile, distance, Tile.Distance);
