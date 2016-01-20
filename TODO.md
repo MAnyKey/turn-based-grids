@@ -1,3 +1,5 @@
+* Make GridManager not to be Singleton
+* Replace capsule by warrior model
 * Implement character speed (how many tiles character can go?)
 ** FX for "can go" tiles
 

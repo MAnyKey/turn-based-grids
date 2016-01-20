@@ -44,21 +44,8 @@ public class ConstrainedTileGenerator : MonoBehaviour {
                 board.Add(tb.tile.Location, tb);
             }
         }
-        Func<Point, TileBehavior> boardFunc = (point) => {
-            TileBehavior tb;
-            board.TryGetValue(point, out tb);
-            return tb;
-        };
-        foreach (KeyValuePair<Point, TileBehavior> pair in board) {
-            pair.Value.FindNeighbours(boardFunc);
-        }
-
         gridManager.Board = board;
-        var chr = Instantiate(character);
-        var charMovement = chr.GetComponent<CharacterMovement>();
-        charMovement.TilePosFunc = (tile) => board[tile.Location].transform.position;
-        charMovement.TeleportTo(board[new Point(0, 0)].tile);
-        gridManager.Character = charMovement;
+        gridManager.CharacterSample = character;
     }
 
     private TileBehavior CreateHex(Vector3 actualPoint, Point location) {

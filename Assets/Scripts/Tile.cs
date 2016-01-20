@@ -8,6 +8,7 @@ using System;
 public class Tile : PathFinding.IHasNeighbours<Tile> {
     public Point Location { get; set; }
     public bool Passable { get; set; }
+    public bool Occupied { get; set; }
 
     public int X { get { return Location.X; } }
     public int Y { get { return Location.Y; } }
@@ -49,7 +50,7 @@ public class Tile : PathFinding.IHasNeighbours<Tile> {
     public List<Tile> AllNeighbours { get; set; }
 
     public IEnumerable<Tile> Neighbours() {
-        return AllNeighbours.Where(n => n.Passable);
+        return AllNeighbours.Where(n => n.Passable && n.Occupied);
     }
 
     public static double Distance(Tile start, Tile end) {

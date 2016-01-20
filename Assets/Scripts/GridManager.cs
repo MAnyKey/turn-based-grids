@@ -6,19 +6,42 @@ using System.Linq;
 
 public class GridManager : MonoBehaviour {
 
-    public static GridManager Instance { get; private set; }
+    //public static GridManager Instance { get; private set; }
 
-    public Dictionary<Point, TileBehavior> Board { get; set; }
-    public CharacterMovement Character { get; set; }
+    private Dictionary<Point, TileBehavior> board_;
+    public Dictionary<Point, TileBehavior> Board {
+        get {
+            return board_;
+        }
+        set {
+            board_ = value;
+            CheckInBoard();
+        }
+    }
+
+    private GameObject characterSample_;
+    public GameObject CharacterSample {
+        get {
+            return characterSample_;
+        }
+        set {
+            characterSample_ = value;
+            CheckInCharacter();
+        }
+    }
+
+
+    private CharacterMovement character_;
+
 
     private bool disableUi_;
 
 	// Use this for initialization
 	void Start () {
-	    if (Instance != null) {
-            throw new System.Exception("Should be only one grid manager");
-        }
-        Instance = this;
+	    //if (Instance != null) {
+     //       throw new System.Exception("Should be only one grid manager");
+     //   }
+     //   Instance = this;
 	}
 
 
@@ -35,7 +58,7 @@ public class GridManager : MonoBehaviour {
     }
 
     private void MoveCharacterTo(TileBehavior tile) {
-        var startTile = Character.tile;
+        var startTile = character_.tile;
         var endTile = tile.tile;
         Func<Tile, Tile, double> distance = (x, y) => 1; // we expect it to be called only for adjacent tiles
 
@@ -49,32 +72,26 @@ public class GridManager : MonoBehaviour {
         var pathTiles = path.Reverse().Skip(1).ToList();
         disableUi_ = true;
         Action<CharacterMovement> action = (x) => { disableUi_ = false; };
-        Character.MoveTo(pathTiles, action);
+        character_.MoveTo(pathTiles, action);
     }
 
-    //private void FindAndShowPath() {
-    //    var startTb = endPointTiles[0];
-    //    var endTb = endPointTiles[1];
+    private void CheckInBoard() {
+        Func<Point, TileBehavior> boardFunc = (point) => {
+            TileBehavior tb;
+            Board.TryGetValue(point, out tb);
+            return tb;
+        };
+        foreach (KeyValuePair<Point, TileBehavior> pair in Board) {
+            pair.Value.FindNeighbours(boardFunc);
+            pair.Value.gridManager = this;
+        }
+    }
 
-    //    Func<TileBehavior, TileBehavior, double> distance = (x, y) => 1; // we expect it to be called only for adjacent tiles
-
-    //    var path = PathFinding.FindPath(startTb, endTb, distance, TileBehavior.Distance);
-    //    if (path != null) {
-    //        pathTiles = path.ToArray();
-    //        UpdatePathTiles(true);
-    //    }
-    //}
-
-    //public void ResetPath() {
-    //    UpdatePathTiles(false);
-    //}
-
-    //private void UpdatePathTiles(bool isPathPart) {
-    //    if (pathTiles == null) {
-    //        return;
-    //    }
-    //    foreach (var tb in pathTiles) {
-    //        tb.IsPathPart = isPathPart;
-    //    }
-    //}
+    private void CheckInCharacter() {
+        var chr = Instantiate(CharacterSample);
+        var charMovement = chr.GetComponent<CharacterMovement>();
+        charMovement.TilePosFunc = (tile) => Board[tile.Location].transform.position;
+        charMovement.TeleportTo(Board[new Point(0, 0)].tile);
+        character_ = charMovement;
+    }
 }

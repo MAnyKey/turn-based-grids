@@ -14,6 +14,9 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
     [HideInInspector]
     public Tile tile;
 
+    [HideInInspector]
+    public GridManager gridManager;
+
     private Collider collider_;
     private Renderer renderer_;
     private Color startColor_;
@@ -42,13 +45,6 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         return Tile.Distance(a.tile, b.tile);
     }
 
-    public bool IsPathPart {
-        set {
-            isPathPart_ = value;
-            UpdateColor();
-        }
-    }
-
 
     void Start() {
         collider_ = GetComponent<Collider>();
@@ -58,9 +54,8 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
 
     void Update() {
         bool isMouseOver = IsMouseOver();
-        
         if (isMouseOver && Input.GetMouseButtonDown(1)) {
-            GridManager.Instance.TileClicked(this, 1);
+            gridManager.TileClicked(this, 1);
         }
 
         if (!tile.Passable) {
@@ -68,7 +63,7 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         }
 
         if (isMouseOver && Input.GetMouseButtonDown(0)) {
-            GridManager.Instance.TileClicked(this, 0);
+            gridManager.TileClicked(this, 0);
         }
     }
 
