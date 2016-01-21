@@ -6,8 +6,6 @@ using System.Linq;
 
 public class GridManager : MonoBehaviour {
 
-    //public static GridManager Instance { get; private set; }
-
     private Dictionary<Point, TileBehavior> board_;
     public Dictionary<Point, TileBehavior> Board {
         get {
@@ -36,24 +34,20 @@ public class GridManager : MonoBehaviour {
 
     private bool disableUi_;
 
-	// Use this for initialization
-	void Start () {
-	    //if (Instance != null) {
-     //       throw new System.Exception("Should be only one grid manager");
-     //   }
-     //   Instance = this;
-	}
-
 
     public void TileClicked(TileBehavior tile, int button) {
         if (disableUi_) {
             // ignore click while moving
             return;
         }
+        DeactivateTiles();
         if (button == 0) {
             MoveCharacterTo(tile);
         } else if (button == 1) {
             tile.TogglePassable();
+        }
+        if (!disableUi_) {
+            ActivateFrom(character_);
         }
     }
 
@@ -73,8 +67,7 @@ public class GridManager : MonoBehaviour {
         
         var pathTiles = path.Reverse().ToList();
         disableUi_ = true;
-        Action<CharacterMovement> action = (x) => { disableUi_ = false; };
-        character_.MoveTo(pathTiles, action);
+        character_.MoveTo(pathTiles, TurnEnded);
     }
 
     private void CheckInBoard() {
@@ -95,5 +88,38 @@ public class GridManager : MonoBehaviour {
         charMovement.TilePosFunc = (tile) => Board[tile.Location].transform.position;
         charMovement.TeleportTo(Board[new Point(0, 0)].Tile);
         character_ = charMovement;
+        ActivateFrom(character_);
+    }
+
+    private void TurnEnded(CharacterMovement character) {
+        disableUi_ = false;
+
+        CharacterMovement nextCharacter = NextCharacter(character);
+        ActivateFrom(nextCharacter);
+    }
+
+    private CharacterMovement NextCharacter(CharacterMovement character) {
+        return character;
+    }
+
+
+    private List<Tile> activeTiles;
+
+    private void ActivateFrom(CharacterMovement character) {
+        var tileBehavior = character.tile.tb_; // FIXME: very bad decision
+        var reachable = PathFinding.ListReachable(tileBehavior.Tile, character.maxMoveDistance);
+        foreach (var tb in reachable) {
+//            Debug.Log(String.Format("Reachable {0}", tb.Tile.Location));
+            tb.CanGoHere = true;
+        }
+        activeTiles = reachable;
+    }
+
+
+    private void DeactivateTiles() {
+        foreach (var tb in activeTiles) {
+            tb.CanGoHere = false;
+        }
+        activeTiles = null;
     }
 }

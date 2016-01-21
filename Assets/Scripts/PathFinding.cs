@@ -105,4 +105,36 @@ public class PathFinding {
         }
         return null;
     }
+
+
+    // assume distances are all equal to one
+    public static List<Node> ListReachable<Node>(Node start, int maxDistance) where Node : class, IHasNeighbours<Node> {
+
+        var distances = new Dictionary<Node, int>();
+        distances.Add(start, 0);
+
+        var queue = new Queue<Node>();
+        queue.Enqueue(start);
+
+        var result = new List<Node>();
+        while (queue.Count != 0) {
+            var node = queue.Dequeue();
+
+            var nodeDistance = distances[node];
+            if (nodeDistance == maxDistance) {
+                continue;
+            }
+            foreach (var neighbour in node.Neighbours()) {
+                if (distances.ContainsKey(neighbour)) {
+                    continue;
+                }
+
+                var neighbourDistance = nodeDistance + 1;
+                distances[neighbour] = neighbourDistance;
+                queue.Enqueue(neighbour);
+                result.Add(neighbour);
+            }
+        }
+        return result;
+    }
 }

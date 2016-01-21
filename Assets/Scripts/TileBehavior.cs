@@ -11,6 +11,7 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
     public Color pathColor;
     public Color nonPassableColor;
     public Color occupiedColor;
+    public Color canGoColor;
 
     private Tile tile_;
     public Tile Tile {
@@ -34,7 +35,17 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
     private Color startColor_;
 
     private List<TileBehavior> allNeighbours_;
-    private bool isPathPart_;
+
+//    private bool canGoHere_;
+//    public bool canGoHere {
+//        get {
+//            return canGoHere_;
+//        }
+//        set {
+//            canGoHere_ = value;
+//            UpdateColor();
+//        }
+//    }
 
 
     public void FindNeighbours(Func<Point, TileBehavior> boardFunc) {
@@ -47,9 +58,6 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         }
         allNeighbours_ = neighbours;
         Tile.AllNeighbours = neighbours.Select(tb => tb.Tile).ToList();
-        //foreach (var t in tile.AllNeighbours) {
-        //    Debug.Log(String.Format("Neighbour of {0} is {1}", tile.Location, t.Location));
-        //}
     }
 
     internal void TileStateUpdated() {
@@ -81,6 +89,10 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
             return;
         }
 
+        if (!Tile.CanGoHere) {
+            return;
+        }
+
         if (isMouseOver && Input.GetMouseButtonDown(0)) {
             gridManager.TileClicked(this, 0);
         }
@@ -95,14 +107,14 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
     }
 
     private Color NeededColor() {
-        if (isPathPart_) {
-            return pathColor;
-        }
         if (Tile.IsNotPassable) {
             return nonPassableColor;
         }
         if (Tile.IsOccupied) {
             return occupiedColor;
+        }
+        if (Tile.CanGoHere) {
+            return canGoColor;
         }
         return startColor_;
     }
