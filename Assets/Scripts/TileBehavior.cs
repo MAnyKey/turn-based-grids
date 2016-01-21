@@ -7,12 +7,24 @@ using System.Linq;
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Renderer))]
 public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavior> {
-    //public Color selectionColor;
+    
     public Color pathColor;
     public Color nonPassableColor;
+    public Color occupiedColor;
 
-    [HideInInspector]
-    public Tile tile;
+    private Tile tile_;
+    public Tile Tile {
+        get {
+            return tile_;
+        }
+        set {
+            if (tile_ != null) {
+                tile_.tb_ = null;
+            }
+            tile_ = value;
+            tile_.tb_ = this;
+        }
+    }
 
     [HideInInspector]
     public GridManager gridManager;
@@ -27,29 +39,33 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
 
     public void FindNeighbours(Func<Point, TileBehavior> boardFunc) {
         var neighbours = new List<TileBehavior>();
-        foreach (var neighbourLocation in tile.PossibleNeighbours()) {
+        foreach (var neighbourLocation in Tile.PossibleNeighbours()) {
             var neighbour = boardFunc(neighbourLocation);
             if (neighbour != null) {
                 neighbours.Add(neighbour);
             }
         }
         allNeighbours_ = neighbours;
-        tile.AllNeighbours = neighbours.Select(tb => tb.tile).ToList();
-        foreach (var t in tile.AllNeighbours) {
-            Debug.Log(String.Format("Neighbour of {0} is {1}", tile.Location, t.Location));
-        }
+        Tile.AllNeighbours = neighbours.Select(tb => tb.Tile).ToList();
+        //foreach (var t in tile.AllNeighbours) {
+        //    Debug.Log(String.Format("Neighbour of {0} is {1}", tile.Location, t.Location));
+        //}
+    }
+
+    internal void TileStateUpdated() {
+        UpdateColor();
     }
 
     public IEnumerable<TileBehavior> Neighbours() {
-        return allNeighbours_.Where(tb => tb.tile.Passable);
+        return allNeighbours_.Where(tb => tb.Tile.IsFree);
     }
 
     public static double Distance(TileBehavior a, TileBehavior b) {
-        return Tile.Distance(a.tile, b.tile);
+        return Tile.Distance(a.Tile, b.Tile);
     }
 
 
-    void Start() {
+    void Awake() {
         collider_ = GetComponent<Collider>();
         renderer_ = GetComponent<Renderer>();
         startColor_ = renderer_.material.color;
@@ -61,7 +77,7 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
             gridManager.TileClicked(this, 1);
         }
 
-        if (!tile.Passable) {
+        if (!Tile.IsFree) {
             return;
         }
 
@@ -71,8 +87,7 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
     }
 
     public void TogglePassable() {
-        tile.Passable = !tile.Passable;
-        UpdateColor();
+        Tile.TogglePassable();
     }
 
     private void UpdateColor() {
@@ -83,8 +98,11 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         if (isPathPart_) {
             return pathColor;
         }
-        if (!tile.Passable) {
+        if (Tile.IsNotPassable) {
             return nonPassableColor;
+        }
+        if (Tile.IsOccupied) {
+            return occupiedColor;
         }
         return startColor_;
     }

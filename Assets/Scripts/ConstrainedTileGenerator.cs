@@ -41,7 +41,7 @@ public class ConstrainedTileGenerator : MonoBehaviour {
             }
             for (int x = 0; x < currentRowWidth; ++x) { 
                 var tb = createHex(x, y);
-                board.Add(tb.tile.Location, tb);
+                board.Add(tb.Tile.Location, tb);
             }
         }
         gridManager.Board = board;
@@ -58,7 +58,7 @@ public class ConstrainedTileGenerator : MonoBehaviour {
             tb = newHex.AddComponent<TileBehavior>();
         }
         var tile = new Tile(location);
-        tb.tile = tile;
+        tb.Tile = tile;
         return tb;
     }
 

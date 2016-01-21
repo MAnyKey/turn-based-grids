@@ -5,6 +5,8 @@ using System;
 // [RequireComponent(typeof(Animation))]
 public class CharacterMovement : MonoBehaviour {
 
+    public int maxMoveDistance = 5;
+
     public float speed = 2.5f;
     public float rotationSpeed = 0.04f;
 
@@ -13,14 +15,9 @@ public class CharacterMovement : MonoBehaviour {
     public Func<Tile, Vector3> TilePosFunc { get; set; }
 
     private Animation animation_;
-    private bool isMoving_;
     private Transform transform_;
 
-    public bool IsMoving {
-        get {
-            return isMoving_;
-        }
-    }
+    public bool IsMoving { get; private set; }
 
     public Tile tile;
     
@@ -40,23 +37,23 @@ public class CharacterMovement : MonoBehaviour {
 
     private Moving move_;
 
-    // we assume that our current position is omitted from the path
+    // we assume that our current position is included in the path
     public void MoveTo(List<Tile> path, Action<CharacterMovement> endMove) {
-        if (path.Count == 0) {
+        if (path.Count <= 1) {
             return;
         }
-        var curTileIdx = 0;
+        var curTileIdx = 1;
         var curTilePos = CalcTilePos(path[curTileIdx]);
-        Debug.Log("CurTilePos: " + curTilePos);
         move_ = new Moving(curTileIdx, curTilePos, path, endMove);
-        isMoving_ = true;
+        IsMoving = true;
     }
 
     public void TeleportTo(Tile tile) {
-        if (isMoving_) {
+        if (IsMoving) {
             return;
         }
         this.tile = tile;
+        tile.Occupy();
         transform_.position = CalcTilePos(tile);
     }
 
@@ -67,7 +64,7 @@ public class CharacterMovement : MonoBehaviour {
     }
 
     void Awake() {
-        isMoving_ = false;
+        IsMoving = false;
         animation_ = GetComponent<Animation>();
         if (animation_) {
             animation_.wrapMode = WrapMode.Loop;    
@@ -77,30 +74,37 @@ public class CharacterMovement : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	    if (!isMoving_) {
+	    if (!IsMoving) {
             return;
         }
         if (CloseEnoughToCurrentTile()) {
-            Debug.Log("CloseEnoughToCurrentTile");
             bool finish = SwitchToNextTile();
             if (finish) {
-                Debug.Log("Finish");
-                var endMove = move_.endMove;
-                tile = move_.path[move_.path.Count - 1];
-                move_ = new Moving();
-                isMoving_ = false;
-
-                //animation_.CrossFade("idle");
-                GoToAnimation("idle");
-                endMove(this);
+                FinishMoving();
                 return;
             }
         }
-        Debug.Log("Moving, pos: " + transform.position);
         MoveTowards(move_.curTilePos);
 	}
 
+    private void FinishMoving() {
+        var endMove = move_.endMove;
+        tile = move_.path[move_.path.Count - 1];
+        var previousTile = move_.path[0];
+
+        move_ = new Moving();
+        IsMoving = false;
+
+        GoToAnimation("idle");
+
+        previousTile.Free();
+        tile.Occupy();
+
+        endMove(this);
+    }
+
     private void MoveTowards(Vector3 curTilePos) {
+        // TODO: make smooth rotation
         var direction = move_.curTilePos - transform.position;
         //transform.rotation = Quaternion.Slerp(transform.rotation, 
         //    Quaternion.LookRotation(direction), rotationSpeed * Time.deltaTime);
@@ -136,7 +140,6 @@ public class CharacterMovement : MonoBehaviour {
             return true;
         }
         move_.curTilePos = CalcTilePos(move_.path[move_.curTileIdx]);
-        Debug.Log("Moving to " + move_.curTilePos);
         return false;
     }
 

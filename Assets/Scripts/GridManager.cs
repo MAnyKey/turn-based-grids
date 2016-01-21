@@ -59,7 +59,7 @@ public class GridManager : MonoBehaviour {
 
     private void MoveCharacterTo(TileBehavior tile) {
         var startTile = character_.tile;
-        var endTile = tile.tile;
+        var endTile = tile.Tile;
         Debug.Log(String.Format("Path from {0} to {1}", startTile.Location, endTile.Location));
 
         Func<Tile, Tile, double> distance = (x, y) => 1; // we expect it to be called only for adjacent tiles
@@ -71,7 +71,7 @@ public class GridManager : MonoBehaviour {
         }
         
         
-        var pathTiles = path.Reverse().Skip(1).ToList();
+        var pathTiles = path.Reverse().ToList();
         disableUi_ = true;
         Action<CharacterMovement> action = (x) => { disableUi_ = false; };
         character_.MoveTo(pathTiles, action);
@@ -93,7 +93,7 @@ public class GridManager : MonoBehaviour {
         var chr = Instantiate(CharacterSample);
         var charMovement = chr.GetComponent<CharacterMovement>();
         charMovement.TilePosFunc = (tile) => Board[tile.Location].transform.position;
-        charMovement.TeleportTo(Board[new Point(0, 0)].tile);
+        charMovement.TeleportTo(Board[new Point(0, 0)].Tile);
         character_ = charMovement;
     }
 }

@@ -6,9 +6,64 @@ using System.Linq;
 using System;
 
 public class Tile : PathFinding.IHasNeighbours<Tile> {
+
     public Point Location { get; set; }
-    public bool Passable { get; set; }
-    public bool Occupied { get; set; }
+
+    private TileState tileState_;
+    public TileBehavior tb_;
+
+    public bool IsFree {
+        get {
+            return tileState_ == TileState.FREE;
+        }
+    }
+
+    public bool IsOccupied {
+        get {
+            return tileState_ == TileState.OCCUPIED;
+        }
+    }
+
+    public bool IsNotPassable {
+        get {
+            return tileState_ == TileState.NOT_PASSABLE;
+        }
+    }
+
+    public void TogglePassable() {
+        Debug.Assert(tileState_ != TileState.OCCUPIED, "Tile must not be occupied to TogglePassable()");
+        switch (tileState_) {
+            case TileState.FREE:
+                tileState_ = TileState.NOT_PASSABLE;
+                break;
+            case TileState.NOT_PASSABLE:
+                tileState_ = TileState.FREE;
+                break;
+        }
+        NotifyState();
+    }
+
+    public void Occupy() {
+        Debug.Assert(tileState_ == TileState.FREE, "Tile must be free to Occupy()");
+        tileState_ = TileState.OCCUPIED;
+        NotifyState();
+    }
+    
+    public void Free() {
+        Debug.Assert(tileState_ == TileState.OCCUPIED, "Tile must be occupied to Free()");
+        tileState_ = TileState.FREE;
+        NotifyState();
+    }
+
+    private void NotifyState() {
+        tb_.TileStateUpdated();
+    }
+
+    public enum TileState {
+        FREE,
+        NOT_PASSABLE,
+        OCCUPIED
+    }
 
     public int X { get { return Location.X; } }
     public int Y { get { return Location.Y; } }
@@ -19,7 +74,7 @@ public class Tile : PathFinding.IHasNeighbours<Tile> {
     }
 
     public Tile(Point location) {
-        Passable = true;
+        tileState_ = TileState.FREE;
         Location = location;
     }
 
@@ -50,7 +105,7 @@ public class Tile : PathFinding.IHasNeighbours<Tile> {
     public List<Tile> AllNeighbours { get; set; }
 
     public IEnumerable<Tile> Neighbours() {
-        return AllNeighbours.Where(n => n.Passable && !n.Occupied);
+        return AllNeighbours.Where(n => n.tileState_ == TileState.FREE);
     }
 
     public static double Distance(Tile start, Tile end) {
@@ -61,6 +116,6 @@ public class Tile : PathFinding.IHasNeighbours<Tile> {
     }
 
     public override string ToString() {
-        return String.Format("Tile(X: {0}, Y: {1}, Passable:{2})", X, Y, Passable);
+        return String.Format("Tile(X: {0}, Y: {1}, TileState:{2})", X, Y, tileState_);
     }
 }
