@@ -1,7 +1,7 @@
 * DONE Make GridManager not to be Singleton
 * DONE Replace capsule by warrior model
-* Implement character speed (how many tiles character can go?)
-** FX for "can go" tiles
+* DONE Implement character speed (how many tiles character can go?)
+** DONE FX for "can go" tiles
 
 * Implement many characters
 ** character characteristics (initiative in particular)
