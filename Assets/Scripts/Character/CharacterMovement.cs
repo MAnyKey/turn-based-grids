@@ -14,12 +14,9 @@ public class CharacterMovement : MonoBehaviour {
     private Animation animation_;
     private Transform transform_;
 
-    public bool IsMoving { get; private set; }
-
     private string animationState;
 
     void Awake() {
-        IsMoving = false;
         animation_ = GetComponent<Animation>();
         if (animation_) {
             animation_.wrapMode = WrapMode.Loop;
@@ -33,13 +30,11 @@ public class CharacterMovement : MonoBehaviour {
             endMove(this);
             return;
         }
-        
-        IsMoving = true;
+
         StartCoroutine(MovingCoroutine(path, endMove));
     }
 
     public void TeleportTo(Tile tile) {
-        Debug.Assert(!IsMoving, "You should teleport stationary characters!");
         transform_.position = CalcTilePos(tile);
     }
 
@@ -81,7 +76,6 @@ public class CharacterMovement : MonoBehaviour {
     }
 
     private void FinishMoving(Tile startPoint, Tile endPoint, Action<CharacterMovement> endMove) {
-        IsMoving = false;
         GoToAnimation("idle");
         endMove(this);
     }

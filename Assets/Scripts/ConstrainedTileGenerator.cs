@@ -45,7 +45,7 @@ public class ConstrainedTileGenerator : MonoBehaviour {
             }
         }
         gridManager.Board = board;
-        gridManager.StartCharacters = characters;
+        gridManager.PlaceCharactersOnTheBoard(characters);
     }
 
     private TileBehavior CreateHex(Vector3 actualPoint, Point location) {

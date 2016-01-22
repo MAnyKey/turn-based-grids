@@ -9,53 +9,22 @@ public class GridManager : MonoBehaviour {
     private Dictionary<Point, TileBehavior> board_;
 
     public Dictionary<Point, TileBehavior> Board {
-        get {
-            return board_;
-        }
+        get { return board_; }
         set {
             board_ = value;
             CheckInBoard();
         }
     }
 
-    private List<GameObject> charactersSample_;
-
-    public List<GameObject> StartCharacters {
-        get {
-            return charactersSample_;
-        }
-        set {
-            charactersSample_ = value;
-            CheckInCharacter();
-        }
-    }
-
-
-    private class Characters {
-        public Characters(List<Character> characters) {
-            characters_ = characters;
-            currentCharacter_ = 0;
-        }
-
-        public Character Character { 
-            get {
-                return characters_[currentCharacter_];
-            }
-        }
-
-        public void MoveToNextCharacter() {
-            currentCharacter_ = (currentCharacter_ + 1) % characters_.Count;
-        }
-
-        private List<Character> characters_;
-        private int currentCharacter_;
-    }
-
-    private Characters characters_;
-
-    private Character character_ { get { return characters_.Character; } }
+    private Character currentCharacter_ { get { return characterQueue_.CurrentCharacter(); } }
 
     private bool disableUi_;
+
+    private CharacterQueue characterQueue_;
+
+    void Awake() {
+        characterQueue_ = GetComponentInChildren<CharacterQueue>();
+    }
 
 
     public void TileClicked(TileBehavior tile, int button) {
@@ -70,12 +39,12 @@ public class GridManager : MonoBehaviour {
                 tile.TogglePassable();
             }
         if (!disableUi_) {
-            ActivateFrom(character_);
+            ActivateFrom(currentCharacter_);
         }
     }
 
     private void MoveCharacterTo(TileBehavior tile) {
-        var startTile = character_.Tile;
+        var startTile = currentCharacter_.Tile;
         var endTile = tile.Tile;
         Debug.Log(String.Format("Path from {0} to {1}", startTile.Location, endTile.Location));
 
@@ -89,7 +58,7 @@ public class GridManager : MonoBehaviour {
         
         var pathTiles = path.Reverse().ToList();
         disableUi_ = true;
-        character_.MoveTo(pathTiles, TurnEnded);
+        currentCharacter_.MoveTo(pathTiles, MoveEnded);
     }
 
     private void CheckInBoard() {
@@ -103,22 +72,20 @@ public class GridManager : MonoBehaviour {
         }
     }
 
-    private void CheckInCharacter() {
-        var charQueue = GetComponentInChildren<CharacterQueue>();
-
+    public void PlaceCharactersOnTheBoard(List<GameObject> startCharacters) {
         var characters = new List<Character>();
-        for (int i = 0; i < StartCharacters.Count; ++i) {
-            var sample = StartCharacters[i];
+        for (int i = 0; i < startCharacters.Count; ++i) {
+            var sample = startCharacters[i];
             var characterGameObject = Instantiate(sample);
-            characterGameObject.transform.parent = charQueue.transform;
+            characterGameObject.transform.parent = characterQueue_.transform;
             var character = characterGameObject.GetComponent<Character>();
             Debug.Assert(character != null, "Character should not be null");
             characters.Add(character);
         }
-        StartCoroutine(StartGameLoop(characters, charQueue.startingPoints));
+        StartCoroutine(StartGameLoop(characters, characterQueue_.startingPoints));
     }
 
-    private void TurnEnded(Character character) {
+    private void MoveEnded(Character character) {
         disableUi_ = false;
 
         Character nextCharacter = NextCharacter(character);
@@ -126,8 +93,8 @@ public class GridManager : MonoBehaviour {
     }
 
     private Character NextCharacter(Character character) {
-        characters_.MoveToNextCharacter();
-        return characters_.Character;
+        characterQueue_.NextCharacter();
+        return currentCharacter_;
     }
 
 
@@ -162,47 +129,8 @@ public class GridManager : MonoBehaviour {
             character.Movement.TilePosFunc = tilePosFunc;
             character.TeleportTo(Board[point].Tile);
         }
-
-        characters_ = new Characters(characters);
-        ActivateFrom(character_);
+            
+        characterQueue_.PlaceCharacters(characters);
+        ActivateFrom(currentCharacter_);
     }
-
-    //    IEnumerator GameLoop(List<Character> characters) {
-    //        while (true) {
-    //            foreach (var character in characters) {
-    //                yield return WaitForClick();
-    //            }
-    ////            yield return WaitForClick();
-    ////            yield return MoveCharacter();
-    ////            yield return NextCharacter();
-    //        }
-    //    }
-    //
-    //    private IEnumerator WaitForClick() {
-    //        DeactivateTiles();
-    //        while (!clicked_) {
-    //            yield return new Wait
-    //        }
-    //    }
-    //
-    //    private IEnumerator MoveCharacter() {
-    //        throw new NotImplementedException();
-    //    }
-
-    //IEnumerator TestCor() {
-    //    for (int i = 0; i < 3; ++i) {
-    //        yield return TestSub(i);
-    //    }
-    //}
-
-    //IEnumerator TestSub(int i) {
-    //    for (int j = 0; j < 3; ++j) {
-    //        Debug.Log("TestSub " + i + " " + j);
-    //        yield return null;
-    //    }
-    //}
-
-    //void Start() {
-    //    StartCoroutine(TestCor());
-    //}
 }
