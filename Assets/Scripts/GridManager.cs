@@ -52,7 +52,7 @@ public class GridManager : MonoBehaviour {
     }
 
     private void MoveCharacterTo(TileBehavior tile) {
-        var startTile = character_.tile;
+        var startTile = character_.Tile;
         var endTile = tile.Tile;
         Debug.Log(String.Format("Path from {0} to {1}", startTile.Location, endTile.Location));
 
@@ -106,10 +106,8 @@ public class GridManager : MonoBehaviour {
     private List<Tile> activeTiles;
 
     private void ActivateFrom(CharacterMovement character) {
-        var tileBehavior = character.tile.tb_; // FIXME: very bad decision
-        var reachable = PathFinding.ListReachable(tileBehavior.Tile, character.maxMoveDistance);
+        var reachable = PathFinding.ListReachable(character.Tile, character.maxMoveDistance);
         foreach (var tb in reachable) {
-//            Debug.Log(String.Format("Reachable {0}", tb.Tile.Location));
             tb.CanGoHere = true;
         }
         activeTiles = reachable;
@@ -121,5 +119,10 @@ public class GridManager : MonoBehaviour {
             tb.CanGoHere = false;
         }
         activeTiles = null;
+    }
+
+
+    IEnumerable GameLoop() {
+        yield return null;
     }
 }

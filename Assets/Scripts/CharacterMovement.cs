@@ -19,7 +19,7 @@ public class CharacterMovement : MonoBehaviour {
 
     public bool IsMoving { get; private set; }
 
-    public Tile tile;
+    public Tile Tile { get; private set; }
     
     private struct Moving {
         public int curTileIdx;
@@ -52,7 +52,7 @@ public class CharacterMovement : MonoBehaviour {
         if (IsMoving) {
             return;
         }
-        this.tile = tile;
+        this.Tile = tile;
         tile.Occupy();
         transform_.position = CalcTilePos(tile);
     }
@@ -89,7 +89,7 @@ public class CharacterMovement : MonoBehaviour {
 
     private void FinishMoving() {
         var endMove = move_.endMove;
-        tile = move_.path[move_.path.Count - 1];
+        Tile = move_.path[move_.path.Count - 1];
         var previousTile = move_.path[0];
 
         move_ = new Moving();
@@ -98,7 +98,7 @@ public class CharacterMovement : MonoBehaviour {
         GoToAnimation("idle");
 
         previousTile.Free();
-        tile.Occupy();
+        Tile.Occupy();
 
         endMove(this);
     }
