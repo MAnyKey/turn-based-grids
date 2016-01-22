@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -122,7 +122,41 @@ public class GridManager : MonoBehaviour {
     }
 
 
-    IEnumerable GameLoop() {
+    IEnumerator GameLoop() {
+        while (true) {
+            yield return WaitForClick();
+            yield return MoveCharacter();
+            yield return NextCharacter();
+        }
+    }
+
+    private IEnumerator WaitForClick() {
         yield return null;
     }
+
+    private IEnumerator MoveCharacter() {
+        throw new NotImplementedException();
+    }
+
+    private IEnumerator NextCharacter() {
+        throw new NotImplementedException();
+    }
+
+
+    //IEnumerator TestCor() {
+    //    for (int i = 0; i < 3; ++i) {
+    //        yield return TestSub(i);
+    //    }
+    //}
+
+    //IEnumerator TestSub(int i) {
+    //    for (int j = 0; j < 3; ++j) {
+    //        Debug.Log("TestSub " + i + " " + j);
+    //        yield return null;
+    //    }
+    //}
+
+    //void Start() {
+    //    StartCoroutine(TestCor());
+    //}
 }

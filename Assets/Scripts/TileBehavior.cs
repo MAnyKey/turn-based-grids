@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System;
 using System.Collections.Generic;
@@ -35,18 +35,6 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
     private Color startColor_;
 
     private List<TileBehavior> allNeighbours_;
-
-//    private bool canGoHere_;
-//    public bool canGoHere {
-//        get {
-//            return canGoHere_;
-//        }
-//        set {
-//            canGoHere_ = value;
-//            UpdateColor();
-//        }
-//    }
-
 
     public void FindNeighbours(Func<Point, TileBehavior> boardFunc) {
         var neighbours = new List<TileBehavior>();
