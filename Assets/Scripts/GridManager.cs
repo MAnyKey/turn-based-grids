@@ -7,6 +7,7 @@ using System.Linq;
 public class GridManager : MonoBehaviour {
 
     private Dictionary<Point, TileBehavior> board_;
+
     public Dictionary<Point, TileBehavior> Board {
         get {
             return board_;
@@ -17,25 +18,26 @@ public class GridManager : MonoBehaviour {
         }
     }
 
-    private GameObject characterSample_;
-    public GameObject CharacterSample {
+    private List<GameObject> charactersSample_;
+
+    public List<GameObject> StartCharacters {
         get {
-            return characterSample_;
+            return charactersSample_;
         }
         set {
-            characterSample_ = value;
+            charactersSample_ = value;
             CheckInCharacter();
         }
     }
 
 
     private class Characters {
-        public Characters(List<CharacterMovement> characters) {
+        public Characters(List<Character> characters) {
             characters_ = characters;
             currentCharacter_ = 0;
         }
 
-        public CharacterMovement Character { 
+        public Character Character { 
             get {
                 return characters_[currentCharacter_];
             }
@@ -45,18 +47,13 @@ public class GridManager : MonoBehaviour {
             currentCharacter_ = (currentCharacter_ + 1) % characters_.Count;
         }
 
-        private List<CharacterMovement> characters_;
+        private List<Character> characters_;
         private int currentCharacter_;
     }
 
     private Characters characters_;
 
-    private CharacterMovement character_ { get { return characters_.Character; } }
-
-//    private class Click {};
-//
-//    private Click click_;
-//    private bool clicked_ { get { return click_ != null; } }
+    private Character character_ { get { return characters_.Character; } }
 
     private bool disableUi_;
 
@@ -70,8 +67,8 @@ public class GridManager : MonoBehaviour {
         if (button == 0) {
             MoveCharacterTo(tile);
         } else if (button == 1) {
-            tile.TogglePassable();
-        }
+                tile.TogglePassable();
+            }
         if (!disableUi_) {
             ActivateFrom(character_);
         }
@@ -90,7 +87,6 @@ public class GridManager : MonoBehaviour {
             return;
         }
         
-        
         var pathTiles = path.Reverse().ToList();
         disableUi_ = true;
         character_.MoveTo(pathTiles, TurnEnded);
@@ -104,39 +100,32 @@ public class GridManager : MonoBehaviour {
         };
         foreach (KeyValuePair<Point, TileBehavior> pair in Board) {
             pair.Value.FindNeighbours(boardFunc);
-            pair.Value.gridManager = this;
         }
     }
 
     private void CheckInCharacter() {
-        var charQueue = GetComponent<CharacterQueue>();
-        Func<Tile, Vector3> tilePosFunc = (tile) => Board[tile.Location].transform.position;
-        var characters = new List<CharacterMovement>();
-        foreach (var item in charQueue.startingPoints) {
-            var chr = Instantiate(CharacterSample);
-            chr.transform.parent = transform;
-            var charMovement = chr.GetComponent<CharacterMovement>();
-            Debug.Assert(charMovement != null, "CharacterMovement should not be null");
+        var charQueue = GetComponentInChildren<CharacterQueue>();
 
-            charMovement.TilePosFunc = tilePosFunc;
-            charMovement.TeleportTo(Board[item].Tile);
-
-//            character_ = charMovement;
-//            ActivateFrom(character_);
-            characters.Add(charMovement);
+        var characters = new List<Character>();
+        for (int i = 0; i < StartCharacters.Count; ++i) {
+            var sample = StartCharacters[i];
+            var characterGameObject = Instantiate(sample);
+            characterGameObject.transform.parent = charQueue.transform;
+            var character = characterGameObject.GetComponent<Character>();
+            Debug.Assert(character != null, "Character should not be null");
+            characters.Add(character);
         }
-        StartGameLoop(characters);
-//        StartCoroutine(GameLoop(characters));
+        StartCoroutine(StartGameLoop(characters, charQueue.startingPoints));
     }
 
-    private void TurnEnded(CharacterMovement character) {
+    private void TurnEnded(Character character) {
         disableUi_ = false;
 
-        CharacterMovement nextCharacter = NextCharacter(character);
+        Character nextCharacter = NextCharacter(character);
         ActivateFrom(nextCharacter);
     }
 
-    private CharacterMovement NextCharacter(CharacterMovement character) {
+    private Character NextCharacter(Character character) {
         characters_.MoveToNextCharacter();
         return characters_.Character;
     }
@@ -144,8 +133,9 @@ public class GridManager : MonoBehaviour {
 
     private List<Tile> activeTiles;
 
-    private void ActivateFrom(CharacterMovement character) {
-        var reachable = PathFinding.ListReachable(character.Tile, character.maxMoveDistance);
+    private void ActivateFrom(Character character) {
+        var maxDistance = character.currentStats.speed;
+        var reachable = PathFinding.ListReachable(character.Tile, maxDistance);
         foreach (var tb in reachable) {
             tb.CanGoHere = true;
         }
@@ -160,32 +150,44 @@ public class GridManager : MonoBehaviour {
         activeTiles = null;
     }
 
-    private void StartGameLoop(List<CharacterMovement> characters) {
+    private IEnumerator StartGameLoop(List<Character> characters, List<Point> startingPoints) {
+        yield return null; // skip one frame to let Character component do Start();
+
+        Debug.Assert(characters.Count <= startingPoints.Count);
+        Func<Tile, Vector3> tilePosFunc = (tile) => Board[tile.Location].transform.position;
+        for (int i = 0; i < characters.Count; ++i) {
+            var point = startingPoints[i];
+            var character = characters[i];
+
+            character.Movement.TilePosFunc = tilePosFunc;
+            character.TeleportTo(Board[point].Tile);
+        }
+
         characters_ = new Characters(characters);
         ActivateFrom(character_);
     }
 
-//    IEnumerator GameLoop(List<CharacterMovement> characters) {
-//        while (true) {
-//            foreach (var character in characters) {
-//                yield return WaitForClick();
-//            }
-////            yield return WaitForClick();
-////            yield return MoveCharacter();
-////            yield return NextCharacter();
-//        }
-//    }
-//
-//    private IEnumerator WaitForClick() {
-//        DeactivateTiles();
-//        while (!clicked_) {
-//            yield return new Wait
-//        }
-//    }
-//
-//    private IEnumerator MoveCharacter() {
-//        throw new NotImplementedException();
-//    }
+    //    IEnumerator GameLoop(List<Character> characters) {
+    //        while (true) {
+    //            foreach (var character in characters) {
+    //                yield return WaitForClick();
+    //            }
+    ////            yield return WaitForClick();
+    ////            yield return MoveCharacter();
+    ////            yield return NextCharacter();
+    //        }
+    //    }
+    //
+    //    private IEnumerator WaitForClick() {
+    //        DeactivateTiles();
+    //        while (!clicked_) {
+    //            yield return new Wait
+    //        }
+    //    }
+    //
+    //    private IEnumerator MoveCharacter() {
+    //        throw new NotImplementedException();
+    //    }
 
     //IEnumerator TestCor() {
     //    for (int i = 0; i < 3; ++i) {

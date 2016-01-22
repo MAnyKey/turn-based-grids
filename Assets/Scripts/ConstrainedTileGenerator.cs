@@ -7,7 +7,7 @@ public class ConstrainedTileGenerator : MonoBehaviour {
     public GameObject hexSample;
     public Transform hexGrid;
     public GameObject constraint;
-    public GameObject character;
+    public List<GameObject> characters;
 
     private Vector2 hexSize;
     private Vector2 constraintSize;
@@ -16,16 +16,16 @@ public class ConstrainedTileGenerator : MonoBehaviour {
     private int gridHeight;
 
 
-	void Start () {
+    void Start() {
         hexSize = GetPlaneSize(hexSample);
         constraintSize = GetPlaneSize(constraint);
 
         ComputeGridSize();
         GenerateGrid();
-	}
+    }
 
     private void GenerateGrid() {
-        GridManager gridManager = hexGrid.gameObject.AddComponent<GridManager>();
+        GridManager gridManager = hexGrid.gameObject.GetComponent<GridManager>();
 
         bool canPlaceFullRows = ((gridWidth + 0.5) * hexSize.x) <= constraintSize.x;
         var initPos = CalculateInitialPosition(canPlaceFullRows);
@@ -45,7 +45,7 @@ public class ConstrainedTileGenerator : MonoBehaviour {
             }
         }
         gridManager.Board = board;
-        gridManager.CharacterSample = character;
+        gridManager.StartCharacters = characters;
     }
 
     private TileBehavior CreateHex(Vector3 actualPoint, Point location) {
@@ -54,9 +54,7 @@ public class ConstrainedTileGenerator : MonoBehaviour {
         newHex.transform.parent = hexGrid;
 
         var tb = newHex.GetComponent<TileBehavior>();
-        if (tb == null) {
-            tb = newHex.AddComponent<TileBehavior>();
-        }
+        Debug.Assert(tb != null, "Hex sample should contain TileBehavior component");
         var tile = new Tile(location);
         tb.Tile = tile;
         return tb;

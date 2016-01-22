@@ -14,6 +14,7 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
     public Color canGoColor;
 
     private Tile tile_;
+
     public Tile Tile {
         get {
             return tile_;
@@ -67,6 +68,10 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         startColor_ = renderer_.material.color;
     }
 
+    void Start() {
+        gridManager = GetComponentInParent<GridManager>();
+    }
+
     void Update() {
         bool isMouseOver = IsMouseOver();
         if (isMouseOver && Input.GetMouseButtonDown(1)) {
@@ -98,9 +103,9 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         if (Tile.IsNotPassable) {
             return nonPassableColor;
         }
-//        if (Tile.IsOccupied) {
-//            return startColor_;
-//        }
+        if (Tile.IsOccupied) {
+            return startColor_;
+        }
         if (Tile.CanGoHere) {
             return canGoColor;
         }

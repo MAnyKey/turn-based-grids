@@ -5,11 +5,9 @@ using System.Collections;
 
 // [RequireComponent(typeof(Animation))]
 public class CharacterMovement : MonoBehaviour {
-
-    public int maxMoveDistance = 5;
-
+    
     public float speed = 2.5f;
-    public float rotationSpeed = 0.04f;
+    //    public float rotationSpeed = 0.04f;
 
     public Func<Tile, Vector3> TilePosFunc { get; set; }
 
@@ -17,8 +15,6 @@ public class CharacterMovement : MonoBehaviour {
     private Transform transform_;
 
     public bool IsMoving { get; private set; }
-
-    public Tile Tile { get; private set; }
 
     private string animationState;
 
@@ -44,9 +40,6 @@ public class CharacterMovement : MonoBehaviour {
 
     public void TeleportTo(Tile tile) {
         Debug.Assert(!IsMoving, "You should teleport stationary characters!");
-
-        Tile = tile;
-        tile.Occupy();
         transform_.position = CalcTilePos(tile);
     }
 
@@ -57,7 +50,6 @@ public class CharacterMovement : MonoBehaviour {
     }
 
     private void GoToAnimation(string animation) {
-        Debug.Log("GoToAnimation " + animation);
         if (!animation_) {
             return;
         }
@@ -90,13 +82,7 @@ public class CharacterMovement : MonoBehaviour {
 
     private void FinishMoving(Tile startPoint, Tile endPoint, Action<CharacterMovement> endMove) {
         IsMoving = false;
-        Tile = endPoint;
-
         GoToAnimation("idle");
-
-        startPoint.Free();
-        endPoint.Occupy();
-
         endMove(this);
     }
 }

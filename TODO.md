@@ -4,10 +4,15 @@
 ** DONE FX for "can go" tiles
 
 * Implement many characters
-** character characteristics (initiative in particular)
-** Turns
-** ui for turn queue?
-** possibility of waiting? (later, I suppose)
+** DONE Ability to spawn multiple units
+** DONE ability to spawn different units
+** DONE character characteristics (initiative in particular)
+** Take initiative into account when calculating next character
+** IN_PRORGESS Turns
+
+** WONTFIX ui for turn queue?
+** WONTFIX possibility of waiting? (later, I suppose)
+
 
 * attacks
 ** add health and armor characteristic
