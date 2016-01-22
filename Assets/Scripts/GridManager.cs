@@ -29,8 +29,34 @@ public class GridManager : MonoBehaviour {
     }
 
 
-    private CharacterMovement character_;
+    private class Characters {
+        public Characters(List<CharacterMovement> characters) {
+            characters_ = characters;
+            currentCharacter_ = 0;
+        }
 
+        public CharacterMovement Character { 
+            get {
+                return characters_[currentCharacter_];
+            }
+        }
+
+        public void MoveToNextCharacter() {
+            currentCharacter_ = (currentCharacter_ + 1) % characters_.Count;
+        }
+
+        private List<CharacterMovement> characters_;
+        private int currentCharacter_;
+    }
+
+    private Characters characters_;
+
+    private CharacterMovement character_ { get { return characters_.Character; } }
+
+//    private class Click {};
+//
+//    private Click click_;
+//    private bool clicked_ { get { return click_ != null; } }
 
     private bool disableUi_;
 
@@ -83,12 +109,24 @@ public class GridManager : MonoBehaviour {
     }
 
     private void CheckInCharacter() {
-        var chr = Instantiate(CharacterSample);
-        var charMovement = chr.GetComponent<CharacterMovement>();
-        charMovement.TilePosFunc = (tile) => Board[tile.Location].transform.position;
-        charMovement.TeleportTo(Board[new Point(0, 0)].Tile);
-        character_ = charMovement;
-        ActivateFrom(character_);
+        var charQueue = GetComponent<CharacterQueue>();
+        Func<Tile, Vector3> tilePosFunc = (tile) => Board[tile.Location].transform.position;
+        var characters = new List<CharacterMovement>();
+        foreach (var item in charQueue.startingPoints) {
+            var chr = Instantiate(CharacterSample);
+            chr.transform.parent = transform;
+            var charMovement = chr.GetComponent<CharacterMovement>();
+            Debug.Assert(charMovement != null, "CharacterMovement should not be null");
+
+            charMovement.TilePosFunc = tilePosFunc;
+            charMovement.TeleportTo(Board[item].Tile);
+
+//            character_ = charMovement;
+//            ActivateFrom(character_);
+            characters.Add(charMovement);
+        }
+        StartGameLoop(characters);
+//        StartCoroutine(GameLoop(characters));
     }
 
     private void TurnEnded(CharacterMovement character) {
@@ -99,7 +137,8 @@ public class GridManager : MonoBehaviour {
     }
 
     private CharacterMovement NextCharacter(CharacterMovement character) {
-        return character;
+        characters_.MoveToNextCharacter();
+        return characters_.Character;
     }
 
 
@@ -121,27 +160,32 @@ public class GridManager : MonoBehaviour {
         activeTiles = null;
     }
 
-
-    IEnumerator GameLoop() {
-        while (true) {
-            yield return WaitForClick();
-            yield return MoveCharacter();
-            yield return NextCharacter();
-        }
+    private void StartGameLoop(List<CharacterMovement> characters) {
+        characters_ = new Characters(characters);
+        ActivateFrom(character_);
     }
 
-    private IEnumerator WaitForClick() {
-        yield return null;
-    }
-
-    private IEnumerator MoveCharacter() {
-        throw new NotImplementedException();
-    }
-
-    private IEnumerator NextCharacter() {
-        throw new NotImplementedException();
-    }
-
+//    IEnumerator GameLoop(List<CharacterMovement> characters) {
+//        while (true) {
+//            foreach (var character in characters) {
+//                yield return WaitForClick();
+//            }
+////            yield return WaitForClick();
+////            yield return MoveCharacter();
+////            yield return NextCharacter();
+//        }
+//    }
+//
+//    private IEnumerator WaitForClick() {
+//        DeactivateTiles();
+//        while (!clicked_) {
+//            yield return new Wait
+//        }
+//    }
+//
+//    private IEnumerator MoveCharacter() {
+//        throw new NotImplementedException();
+//    }
 
     //IEnumerator TestCor() {
     //    for (int i = 0; i < 3; ++i) {

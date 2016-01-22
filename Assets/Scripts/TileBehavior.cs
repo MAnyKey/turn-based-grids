@@ -98,9 +98,9 @@ public class TileBehavior : MonoBehaviour, PathFinding.IHasNeighbours<TileBehavi
         if (Tile.IsNotPassable) {
             return nonPassableColor;
         }
-        if (Tile.IsOccupied) {
-            return occupiedColor;
-        }
+//        if (Tile.IsOccupied) {
+//            return startColor_;
+//        }
         if (Tile.CanGoHere) {
             return canGoColor;
         }

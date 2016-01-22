@@ -20,6 +20,8 @@ public class CharacterMovement : MonoBehaviour {
 
     public Tile Tile { get; private set; }
 
+    private string animationState;
+
     void Awake() {
         IsMoving = false;
         animation_ = GetComponent<Animation>();
@@ -55,12 +57,14 @@ public class CharacterMovement : MonoBehaviour {
     }
 
     private void GoToAnimation(string animation) {
+        Debug.Log("GoToAnimation " + animation);
         if (!animation_) {
             return;
         }
 
-        if (!animation_[animation].enabled) {
+        if (animation != animationState) {
             animation_.CrossFade(animation);
+            animationState = animation;
         }
     }
 
