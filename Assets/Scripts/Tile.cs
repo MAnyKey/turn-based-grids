@@ -27,8 +27,8 @@ public class Tile : PathFinding.IHasNeighbours<Tile> {
         tileState_ = TileState.FREE;
     }
 
-    public int X { get { return Location.X; } }
-    public int Y { get { return Location.Y; } }
+    public int X { get { return Location.x; } }
+    public int Y { get { return Location.y; } }
     public int Z { get { return -(X + Y); } }
 
     public bool IsFree { get { return tileState_ == TileState.FREE; } }
@@ -78,7 +78,7 @@ public class Tile : PathFinding.IHasNeighbours<Tile> {
         };
 
     public IEnumerable<Point> PossibleNeighbours() {
-        return shifts.Select(shift => new Point(X + shift.X, Y + shift.Y));
+        return shifts.Select(shift => new Point(X + shift.x, Y + shift.y));
     }
 
     // TODO: resolve Tile/TileBehavior duality
