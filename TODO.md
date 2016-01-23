@@ -7,11 +7,11 @@
 ** DONE Ability to spawn multiple units
 ** DONE ability to spawn different units
 ** DONE character characteristics (initiative in particular)
-** Take initiative into account when calculating next character
+** IN_PROGRESS Take initiative into account when calculating next character
 ** IN_PRORGESS Turns
+** IN_PROGRESS possibility of waiting? (later, I suppose)
 
 ** WONTFIX ui for turn queue?
-** WONTFIX possibility of waiting? (later, I suppose)
 
 
 * attacks

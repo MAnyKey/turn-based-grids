@@ -10,37 +10,98 @@ public class CharacterQueue : MonoBehaviour {
 
     //    public List<Character> Characters { get; set; }
     public void PlaceCharacters(List<Character> characters) {
-        characters_ = new CharQueue(characters);
+        allCharacters_ = new HashSet<Character>(characters);
+        queue_ = new TurnQueue(characters);
     }
 
-    public void NextCharacter() {
-        characters_.MoveToNextCharacter();
+    public Character GetCurrentCharacter() {
+        return queue_.Character;
     }
 
-    public Character CurrentCharacter() {
-        return characters_.Character;
+    public void CharacterHasTurned() {
+        queue_.MoveToNextCharacter();
+    }
+
+    public void CharacterIsWaiting() {
+        throw new NotImplementedException();
+    }
+
+    // Character can move only on next turn
+    public void AddCharacter(Character character) {
+        throw new NotImplementedException();
+    }
+
+    // Character dies
+    public void RemoveCharacter(Character character) {
+        throw new NotImplementedException();
     }
 
 
-    private class CharQueue {
-        public CharQueue(List<Character> characters) {
-            characters_ = characters;
-            currentCharacter_ = 0;
+    private class TurnQueue {
+        public TurnQueue(List<Character> characters) {
         }
 
         public Character Character { 
-            get {
-                return characters_[currentCharacter_];
+            get { 
+                if (normalTurn_.Count != 0) {
+                    return normalTurn_.Peek();
+                }
+                return waiting_[waiting_.Count - 1];
             }
         }
 
-        public void MoveToNextCharacter() {
-            currentCharacter_ = (currentCharacter_ + 1) % characters_.Count;
+
+        public void Wait() {
+            Debug.Assert(!IsEmpty());
+            Debug.Assert(!IsWaitStage, "Cannot wait in wait stage");
+
+            var character = normalTurn_.Dequeue();
+            waiting_.Add(character);
+
+            if (IsWaitStage) {
+                NotifyWaitStage();    
+            }
         }
 
-        private List<Character> characters_;
-        private int currentCharacter_;
+        public void DoAction() {
+            Debug.Assert(!IsEmpty());
+
+            bool wasWaitStage = IsWaitStage;
+
+            if (!wasWaitStage) {
+                normalTurn_.Dequeue();    
+            } else {
+                waiting_.RemoveAt(waiting_.Count - 1);
+            }
+
+            if (IsEndOfTheTurn) {
+                NotifyEndOfTheTurn();
+            }
+
+            if (!wasWaitStage && IsWaitStage) {
+                NotifyWaitStage();
+            }
+        }
+
+        private bool IsWaitStage { get { return normalTurn_.Count != 0; } }
+
+        private bool IsEndOfTheTurn { get { return IsEmpty; } }
+
+        private bool IsEmpty() {
+            return normalTurn_.Count != 0 || waiting_.Count != 0;
+        }
+
+
+
+
+        private Queue<Character> normalTurn_;
+        private List<Character> waiting_;
+
+    
     }
 
-    private CharQueue characters_;
+
+    private HashSet<Character> allCharacters_;
+    private TurnQueue queue_;
+    private int turn_;
 }
