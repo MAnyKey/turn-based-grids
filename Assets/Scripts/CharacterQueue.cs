@@ -18,8 +18,8 @@ public class CharacterQueue : MonoBehaviour {
         return queue_.Character;
     }
 
-    public void CharacterHasTurned() {
-        queue_.MoveToNextCharacter();
+    public void CharacterDidAction() {
+        queue_.DoAction();
     }
 
     public void CharacterIsWaiting() {
@@ -39,6 +39,8 @@ public class CharacterQueue : MonoBehaviour {
 
     private class TurnQueue {
         public TurnQueue(List<Character> characters) {
+            // FIXME: changing initiative of character doesn't change it's order in the queue
+            // TODO: form queue
         }
 
         public Character Character { 
@@ -55,32 +57,48 @@ public class CharacterQueue : MonoBehaviour {
             Debug.Assert(!IsEmpty());
             Debug.Assert(!IsWaitStage, "Cannot wait in wait stage");
 
-            var character = normalTurn_.Dequeue();
-            waiting_.Add(character);
-
-            if (IsWaitStage) {
-                NotifyWaitStage();    
+            using (var notifier = new TurnsHandle(this)) {
+                var character = normalTurn_.Dequeue();
+                waiting_.Add(character);    
             }
         }
 
         public void DoAction() {
             Debug.Assert(!IsEmpty());
 
-            bool wasWaitStage = IsWaitStage;
-
-            if (!wasWaitStage) {
+            using (var notifier = new TurnsHandle(this)) {
+                if (IsWaitStage) {
+                    waiting_.RemoveAt(waiting_.Count - 1);    
+                    return; 
+                } 
                 normalTurn_.Dequeue();    
-            } else {
-                waiting_.RemoveAt(waiting_.Count - 1);
+            }
+        }
+
+        public void RemoveCharacter(Character character) {
+            using (var notifier = new TurnsHandle(this)) {
+                // TODO: remove from normalTurn_
+                waiting_.RemoveAll(character);
+            }
+        }
+
+        private class TurnsHandle : IDisposable {
+            public TurnsHandle(TurnQueue queue) {
+                queue_ = queue;
+                wasWaitStage_ = queue.IsWaitStage;
             }
 
-            if (IsEndOfTheTurn) {
-                NotifyEndOfTheTurn();
+            public void Dispose() {
+                if (queue_.IsEndOfTheTurn) {
+                    queue_.NotifyEndOfTheTurn();
+                }                
+                if (!wasWaitStage_ && queue_.IsWaitStage) {
+                    queue_.NotifyWaitStage();
+                }
             }
 
-            if (!wasWaitStage && IsWaitStage) {
-                NotifyWaitStage();
-            }
+            private readonly TurnQueue queue_;
+            private readonly bool wasWaitStage_;
         }
 
         private bool IsWaitStage { get { return normalTurn_.Count != 0; } }
@@ -92,7 +110,13 @@ public class CharacterQueue : MonoBehaviour {
         }
 
 
+        private void NotifyEndOfTheTurn() {
+            throw new NotImplementedException();
+        }
 
+        private void NotifyWaitStage() {
+            throw new NotImplementedException();
+        }
 
         private Queue<Character> normalTurn_;
         private List<Character> waiting_;
