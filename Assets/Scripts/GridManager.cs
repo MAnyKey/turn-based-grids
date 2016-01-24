@@ -16,7 +16,7 @@ public class GridManager : MonoBehaviour {
         }
     }
 
-    private Character currentCharacter_ { get { return characterQueue_.CurrentCharacter(); } }
+    private Character currentCharacter_ { get { return characterQueue_.GetCurrentCharacter(); } }
 
     private bool disableUi_;
 
@@ -93,7 +93,7 @@ public class GridManager : MonoBehaviour {
     }
 
     private Character NextCharacter(Character character) {
-        characterQueue_.NextCharacter();
+        characterQueue_.CharacterDidAction();
         return currentCharacter_;
     }
 
