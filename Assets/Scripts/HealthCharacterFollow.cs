@@ -5,13 +5,10 @@ public class HealthCharacterFollow : MonoBehaviour {
 
     public Transform target;
 
-    // Use this for initialization
-    void Start() {
-	
-    }
-	
+
     // Update is called once per frame
     void Update() {
-	
+        var pos = Camera.main.WorldToScreenPoint(target.position);
+        transform.position = pos;
     }
 }
