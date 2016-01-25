@@ -16,9 +16,12 @@
 
 
 * attacks
-** add health and armor characteristic
-** health/armor ui
-** attack direction
+** DONE add health and armor characteristic
+** DONE health/armor ui
+** WONTFIX attack direction
+** attack action after move
+*** calculate possible targets
+*** add ui on skip move
 ** dying
 
 * build teams

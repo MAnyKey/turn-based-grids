@@ -26,6 +26,13 @@ public class GridManager : MonoBehaviour, CharacterQueue.IObserver {
 
     private bool canWait_ = true;
 
+    private ActionState actionState_;
+
+    public enum ActionState {
+        MOVE,
+        ATTACK
+    }
+
     private CharacterQueue characterQueue_;
 
     void Awake() {
@@ -36,11 +43,18 @@ public class GridManager : MonoBehaviour, CharacterQueue.IObserver {
     void Update() {
         bool wait = Input.GetKeyUp(KeyCode.W);
         if (wait) {
-            if (!canWait_) {
-                Debug.Log("Cannot wait!");
+            if (!canWait_ || actionState_ == ActionState.ATTACK) {
+                Debug.Log(String.Format("Cannot wait! {0}, {1}", canWait_, actionState_));
                 return;
             }
+            actionState_ = ActionState.MOVE;
             characterQueue_.CharacterIsWaiting();
+            ActivateFrom(GetCurrentCharacter());
+        }
+        bool defend = Input.GetKeyUp(KeyCode.D);
+        if (defend) {
+            actionState_ = ActionState.MOVE;
+            characterQueue_.CharacterDidAction();
             ActivateFrom(GetCurrentCharacter());
         }
     }
@@ -60,11 +74,12 @@ public class GridManager : MonoBehaviour, CharacterQueue.IObserver {
             return;
         }
         DeactivateTiles();
-        if (button == 0) {
+        if (button == 0 && actionState_ == ActionState.MOVE) {
             MoveCharacterTo(tile);
+            disableUi_ = true;
         } else if (button == 1) {
-                tile.TogglePassable();
-            }
+            tile.TogglePassable();
+        }
         if (!disableUi_) {
             ActivateFrom(GetCurrentCharacter());
         }
@@ -84,13 +99,20 @@ public class GridManager : MonoBehaviour, CharacterQueue.IObserver {
         }
         
         var pathTiles = path.Reverse().ToList();
-        disableUi_ = true;
         GetCurrentCharacter().MoveTo(pathTiles, MoveEnded);
     }
 
     private void MoveEnded(Character character) {
         disableUi_ = false;
+        actionState_ = ActionState.ATTACK;
 
+        // TODO: mark can attack characters
+    }
+
+    private void AttackEnded(Character character) {
+        disableUi_ = false;
+
+        actionState_ = ActionState.MOVE;
         characterQueue_.CharacterDidAction();
         ActivateFrom(GetCurrentCharacter());
     }
@@ -108,7 +130,6 @@ public class GridManager : MonoBehaviour, CharacterQueue.IObserver {
         }
         activeTiles = reachable;
     }
-
 
     private void DeactivateTiles() {
         foreach (var tb in activeTiles) {
