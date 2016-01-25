@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(CharacterMovement))]
 [RequireComponent(typeof(CharacterStats))]
+[RequireComponent(typeof(CharacterUI))]
 public class Character : MonoBehaviour {
 
     private CharacterStats stats_;

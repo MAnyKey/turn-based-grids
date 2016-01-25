@@ -6,6 +6,8 @@ using System.Linq;
 
 public class GridManager : MonoBehaviour, CharacterQueue.IObserver {
 
+    public Canvas uiCanvas;
+
     private Dictionary<Point, TileBehavior> board_;
 
     public Dictionary<Point, TileBehavior> Board {
@@ -135,6 +137,9 @@ public class GridManager : MonoBehaviour, CharacterQueue.IObserver {
             var character = characterGameObject.GetComponent<Character>();
             Debug.Assert(character != null, "Character should not be null");
             characters.Add(character);
+
+            characterGameObject.GetComponent<CharacterUI>().targetCanvas = uiCanvas;
+
         }
         StartCoroutine(StartGameLoop(characters, characterQueue_.startingPoints));
     }
