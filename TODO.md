@@ -7,9 +7,10 @@
 ** DONE Ability to spawn multiple units
 ** DONE ability to spawn different units
 ** DONE character characteristics (initiative in particular)
-** IN_PROGRESS Take initiative into account when calculating next character
-** IN_PRORGESS Turns
-** IN_PROGRESS possibility of waiting? (later, I suppose)
+** DONE Take initiative into account when calculating next character
+*** Recalculate turns queue when character's initiative has been changed
+** DONE Turns
+** DONE possibility of waiting? 
 
 ** WONTFIX ui for turn queue?
 
@@ -21,3 +22,5 @@
 ** dying
 
 * build teams
+
+* manual placement of characters

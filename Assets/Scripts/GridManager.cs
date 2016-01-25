@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 
-public class GridManager : MonoBehaviour {
+public class GridManager : MonoBehaviour, CharacterQueue.IObserver {
 
     private Dictionary<Point, TileBehavior> board_;
 
@@ -16,16 +16,41 @@ public class GridManager : MonoBehaviour {
         }
     }
 
-    private Character currentCharacter_ { get { return characterQueue_.GetCurrentCharacter(); } }
+    private Character GetCurrentCharacter() { 
+        return characterQueue_.GetCurrentCharacter();
+    }
 
     private bool disableUi_;
+
+    private bool canWait_ = true;
 
     private CharacterQueue characterQueue_;
 
     void Awake() {
         characterQueue_ = GetComponentInChildren<CharacterQueue>();
+        characterQueue_.AddObserver(this);
     }
 
+    void Update() {
+        bool wait = Input.GetKeyUp(KeyCode.W);
+        if (wait) {
+            if (!canWait_) {
+                Debug.Log("Cannot wait!");
+                return;
+            }
+            characterQueue_.CharacterIsWaiting();
+            ActivateFrom(GetCurrentCharacter());
+        }
+    }
+
+
+    public void EndOfTheTurn() {
+        canWait_ = true;
+    }
+
+    public void WaitStage() {
+        canWait_ = false;
+    }
 
     public void TileClicked(TileBehavior tile, int button) {
         if (disableUi_) {
@@ -39,12 +64,12 @@ public class GridManager : MonoBehaviour {
                 tile.TogglePassable();
             }
         if (!disableUi_) {
-            ActivateFrom(currentCharacter_);
+            ActivateFrom(GetCurrentCharacter());
         }
     }
 
     private void MoveCharacterTo(TileBehavior tile) {
-        var startTile = currentCharacter_.Tile;
+        var startTile = GetCurrentCharacter().Tile;
         var endTile = tile.Tile;
         Debug.Log(String.Format("Path from {0} to {1}", startTile.Location, endTile.Location));
 
@@ -58,7 +83,36 @@ public class GridManager : MonoBehaviour {
         
         var pathTiles = path.Reverse().ToList();
         disableUi_ = true;
-        currentCharacter_.MoveTo(pathTiles, MoveEnded);
+        GetCurrentCharacter().MoveTo(pathTiles, MoveEnded);
+    }
+
+    private void MoveEnded(Character character) {
+        disableUi_ = false;
+
+        characterQueue_.CharacterDidAction();
+        ActivateFrom(GetCurrentCharacter());
+    }
+
+    private List<Tile> activeTiles;
+
+    private void ActivateFrom(Character character) {
+        if (activeTiles != null) {
+            DeactivateTiles();
+        }
+        var maxDistance = character.currentStats.speed;
+        var reachable = PathFinding.ListReachable(character.Tile, maxDistance);
+        foreach (var tb in reachable) {
+            tb.CanGoHere = true;
+        }
+        activeTiles = reachable;
+    }
+
+
+    private void DeactivateTiles() {
+        foreach (var tb in activeTiles) {
+            tb.CanGoHere = false;
+        }
+        activeTiles = null;
     }
 
     private void CheckInBoard() {
@@ -85,38 +139,6 @@ public class GridManager : MonoBehaviour {
         StartCoroutine(StartGameLoop(characters, characterQueue_.startingPoints));
     }
 
-    private void MoveEnded(Character character) {
-        disableUi_ = false;
-
-        Character nextCharacter = NextCharacter(character);
-        ActivateFrom(nextCharacter);
-    }
-
-    private Character NextCharacter(Character character) {
-        characterQueue_.CharacterDidAction();
-        return currentCharacter_;
-    }
-
-
-    private List<Tile> activeTiles;
-
-    private void ActivateFrom(Character character) {
-        var maxDistance = character.currentStats.speed;
-        var reachable = PathFinding.ListReachable(character.Tile, maxDistance);
-        foreach (var tb in reachable) {
-            tb.CanGoHere = true;
-        }
-        activeTiles = reachable;
-    }
-
-
-    private void DeactivateTiles() {
-        foreach (var tb in activeTiles) {
-            tb.CanGoHere = false;
-        }
-        activeTiles = null;
-    }
-
     private IEnumerator StartGameLoop(List<Character> characters, List<Point> startingPoints) {
         yield return null; // skip one frame to let Character component do Start();
 
@@ -131,6 +153,6 @@ public class GridManager : MonoBehaviour {
         }
             
         characterQueue_.PlaceCharacters(characters);
-        ActivateFrom(currentCharacter_);
+        ActivateFrom(GetCurrentCharacter());
     }
 }

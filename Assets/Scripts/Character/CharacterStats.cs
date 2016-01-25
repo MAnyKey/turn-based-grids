@@ -16,15 +16,11 @@ public class CharacterStats : MonoBehaviour {
     [SerializeField]
     Stats startStats;
 
+    [HideInInspector]
     public Stats currentStats;
 
 
     void Awake() {
         currentStats = startStats;
-    }
-	
-    // Update is called once per frame
-    void Update() {
-	
     }
 }

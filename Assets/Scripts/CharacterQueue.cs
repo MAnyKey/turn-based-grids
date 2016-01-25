@@ -9,13 +9,14 @@ public class CharacterQueue : MonoBehaviour {
     // TODO: move outside of this class
     public List<Point> startingPoints;
 
-    //    public List<Character> Characters { get; set; }
     public void PlaceCharacters(List<Character> characters) {
         allCharacters_ = new HashSet<Character>(characters);
+        StartNewTurn();
     }
 
     public void StartNewTurn() {
         queue_ = new TurnQueue(this, allCharacters_.ToList());
+        turn_++;
     }
 
     public Character GetCurrentCharacter() {
@@ -27,19 +28,45 @@ public class CharacterQueue : MonoBehaviour {
     }
 
     public void CharacterIsWaiting() {
-        throw new NotImplementedException();
+        queue_.Wait();
     }
 
     // Character can move only on next turn
     public void AddCharacter(Character character) {
-        throw new NotImplementedException();
+        allCharacters_.Add(character);
     }
 
     // Character dies
     public void RemoveCharacter(Character character) {
-        throw new NotImplementedException();
+        allCharacters_.Remove(character);
+        queue_.RemoveCharacter(character);
     }
 
+    public interface IObserver {
+        void EndOfTheTurn();
+        void WaitStage();
+    }
+
+    public void AddObserver(IObserver observer) {
+        observers_.Add(observer);
+    }
+
+    public void RemoveObserver(IObserver observer) {
+        observers_.Remove(observer);
+    }
+
+    private void NotifyEndOfTheTurn() {
+        StartNewTurn();
+        foreach (var observer in observers_) {
+            observer.EndOfTheTurn();   
+        }
+    }
+
+    private void NotifyWaitStage() {
+        foreach (var observer in observers_) {
+            observer.WaitStage();
+        }
+    }
 
     // FIXME: changing initiative of character doesn't change it's order in the queue
     private class TurnQueue {
@@ -76,7 +103,7 @@ public class CharacterQueue : MonoBehaviour {
 
             using (var notifier = new TurnNotifier(this)) {
                 if (IsWaitStage) {
-                    RemoveLast(normalTurn_);
+                    RemoveLast(waiting_);
                     return; 
                 } 
                 RemoveLast(normalTurn_);
@@ -85,8 +112,8 @@ public class CharacterQueue : MonoBehaviour {
 
         public void RemoveCharacter(Character character) {
             using (var notifier = new TurnNotifier(this)) {
-                normalTurn_.RemoveAll((c) => c == character);
-                waiting_.RemoveAll((c) => c == character);
+                normalTurn_.Remove(character);
+                waiting_.Remove(character);
             }
         }
 
@@ -109,12 +136,12 @@ public class CharacterQueue : MonoBehaviour {
             private readonly bool wasWaitStage_;
         }
 
-        private bool IsWaitStage { get { return normalTurn_.Count != 0; } }
+        private bool IsWaitStage { get { return normalTurn_.Count == 0; } }
 
         private bool IsEndOfTheTurn { get { return IsEmpty(); } }
 
         private bool IsEmpty() {
-            return normalTurn_.Count != 0 || waiting_.Count != 0;
+            return normalTurn_.Count == 0 && waiting_.Count == 0;
         }
 
         private List<Character> normalTurn_;
@@ -122,6 +149,7 @@ public class CharacterQueue : MonoBehaviour {
         private CharacterQueue parent_;
 
         private static T Last<T>(List<T> list) {
+            Debug.Assert(list.Count != 0);
             return list[list.Count - 1];
         }
 
@@ -132,16 +160,9 @@ public class CharacterQueue : MonoBehaviour {
         }
     }
 
-    private void NotifyEndOfTheTurn() {
-        throw new NotImplementedException();
-    }
+    private HashSet<Character> allCharacters_ = new HashSet<Character>();
+    private TurnQueue queue_ = null;
+    private int turn_ = 0;
 
-    private void NotifyWaitStage() {
-        throw new NotImplementedException();
-    }
-
-
-    private HashSet<Character> allCharacters_;
-    private TurnQueue queue_;
-    private int turn_;
+    private List<IObserver> observers_ = new List<IObserver>();
 }
